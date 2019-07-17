@@ -5,7 +5,7 @@
 - create a project folder and cd into the folder
 - type the following command:
 
-`rails new . --api --database=postgresql -T --no-rdoc --no-ri`
+`rails new backend --api --database=postgresql -T --no-rdoc --no-ri`
 
 - configure database in database.yml
 
@@ -92,6 +92,14 @@ Disable `require 'bootsnap/setup'` in config/boot.rb
 - run migrations
 - run seed
 
+```ruby
+require('faker')
+
+3.times do
+  User.create(first_name: Faker::Name.first_name, last_name: Faker::Name.last_name, email: Faker::Internet.email, password: Faker::Internet.password)
+end
+```
+
 ## Setup The Routes
 
 ### Create API Namespace
@@ -130,17 +138,40 @@ end
 - In ComponentDidMount, create a request with Axios:
 
 ```javascript
-componentDidMount() {
-  axios
-    .get("http://localhost:3001/api/v1/resources.json")
-    .then(response => {
-      console.log(response);
-      this.setState({
-        resources: response.data
-      });
-    })
-    .catch(error => console.log(error));
+import React, { Component } from 'react';
+import axios from 'axios';
+import './App.css';
+
+class App extends Component {
+  state = { users: [] };
+
+  componentDidMount() {
+    axios
+      .get('/api/users')
+      .then(response => {
+        console.log(response);
+        this.setState({
+          users: response.data,
+        });
+      })
+      .catch(error => console.log(error));
+  }
+
+  render() {
+    return (
+      <div className='App'>
+        <h1>Users</h1>
+        {this.state.users.map(user => (
+          <div key={user.id}>
+            {user.first_name} {user.last_name}
+          </div>
+        ))}
+      </div>
+    );
+  }
 }
+
+export default App;
 ```
 
 ## References

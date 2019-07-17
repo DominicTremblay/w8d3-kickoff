@@ -20,7 +20,6 @@
 
 ## Additonal useful middleware
 
-- body-parser
 - dotenv
 
 ## configure Knex
@@ -37,8 +36,18 @@
       user: process.env.DB_USER,
       password: process.env.DB_PASS,
       database: process.env.DB_NAME,
-      port: process.env.DB_PORT,
     },
+```
+
+in dotenv
+
+```js
+DB_HOST=localhost
+DB_USER=labber
+DB_PASS=labber
+DB_NAME=midterm
+DB_SSL=true if heroku
+DB_PORT=5432
 ```
 
 - make sure migrations and seeds are added to './db' folder in knexfile.js
@@ -61,9 +70,18 @@ const knex = require('knex')(knexConfig['development']);
 require('dotenv').config();
 ```
 
-- # install pg - npm install pg --save
 - install pg
-- create migrations (knex migrate:make migration_name)
+
+`npm install pg --save`
+
+- Create the database with owner
+
+  `createdb final_project -O labber`
+
+- create migrations
+
+  `knex migrate:make migration_name`
+
 - create seeds
 
 ## Seeds
@@ -74,15 +92,20 @@ require('dotenv').config();
 - To restart auto increments at 1 each time the seed file runs, use Promise.all and ALTER SEQUENCE query:
 
 ```js
-exports.seed = function(knex, Promise) {
+exports.seed = function(knex) {
+  // Deletes ALL existing entries
   return Promise.all([
     knex('users').del(),
     knex.raw('ALTER SEQUENCE users_id_seq RESTART WITH 1'),
     knex('users').then(function() {
-      return Promise.all([
-        knex('users').insert({ name: 'Alice' }),
-        knex('users').insert({ name: 'Bob' }),
-        knex('users').insert({ name: 'Charlie' }),
+      // Inserts seed entries
+      return knex('users').insert([
+        {
+          first_name: 'SpongeBob',
+          last_name: 'Squarepants',
+          email: 'dominictremblay24@gmail.com',
+          password: 'password',
+        },
       ]);
     }),
   ]);
@@ -129,30 +152,35 @@ Make sure create-react-app is installed globally:
 
 ## Add a Request in ComponentDidMount of App
 
-```
+```js
+import React, { Component } from 'react';
+import './App.css';
+
 import React, { Component } from 'react';
 import './App.css';
 
 class App extends Component {
-state = {users: []}
+  state = { users: [] };
 
   componentDidMount() {
-    fetch('/api/v1/users')
+    fetch('/api/users')
       .then(res => res.json())
       .then(users => this.setState({ users }));
-    }
+  }
 
-    render() {
-      return (
-        <div className="App">
+  render() {
+    return (
+      <div className='App'>
         <h1>Users</h1>
-          {this.state.users.map(user =>
-            <div key={user.id}>{user.username}</div>
-          )}
-        </div>
-      );
-      }
-    }
+        {this.state.users.map(user => (
+          <div key={user.id}>
+            {user.first_name} {user.last_name}
+          </div>
+        ))}
+      </div>
+    );
+  }
+}
 
 export default App;
 ```
